@@ -1,64 +1,140 @@
-import { NextResponse } from "next/server";
-import { db } from "@/db"; // Assure-toi que ce chemin correspond à ton fichier index.ts de Drizzle
-import { sources, articles } from "@/db/schema";
-import { eq } from "drizzle-orm";
-import Parser from "rss-parser";
+import { NextResponse } from 'next/server';
+import { db } from '@/db';
+import { sources, articles } from '@/db/schema';
+import { eq, and, lt, sql } from 'drizzle-orm';
+import Parser from 'rss-parser';
+import crypto from 'crypto';
 
-// On force Next.js à exécuter cette route dynamiquement (pas de cache)
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
+
+function genererHash(texte: string) {
+  return crypto.createHash('sha256').update(texte).digest('hex');
+}
 
 export async function GET(request: Request) {
   try {
-    // ÉTAPE 1 : Sécurité Vercel Cron (Automatique selon l'environnement)
-    if (process.env.NODE_ENV === "production") {
-      const authHeader = request.headers.get("authorization");
+    if (process.env.NODE_ENV === 'production') {
+      const authHeader = request.headers.get('authorization');
       if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-        return new NextResponse("Unauthorized", { status: 401 });
+        return new NextResponse('Unauthorized', { status: 401 });
       }
     }
 
-    console.log("🚀 Lancement du Cron d'Ingestion...");
+    console.log("\n--- 🚀 DEBUT DU CRON D'INGESTION ---");
 
-    // ÉTAPE 2 : Récupérer toutes les sources ACTIVES depuis NeonDB
     const sourcesActives = await db
       .select()
       .from(sources)
       .where(eq(sources.actif, true));
 
     if (sourcesActives.length === 0) {
-      return NextResponse.json({
-        message: "Aucune source active trouvée en base.",
-      });
+      console.log('⚠️ Aucune source active.');
+      return NextResponse.json({ message: 'Aucune source active.' });
     }
 
-    let articlesAjoutes = 0;
+    let totalTraites = 0;
+    const parser = new Parser();
 
-    // ÉTAPE 3 : Boucler sur chaque source pour récupérer le contenu
     for (const source of sourcesActives) {
-      console.log(`📡 Traitement de la source : ${source.nom}`);
+      const urlPropre = source.urlFlux.trim();
+      console.log(`\n📡 Source : [${source.nom.toUpperCase()}]`);
 
-      if (source.urlFlux.includes("algolia.com")) {
-        // -> LOGIQUE HACKER NEWS (API JSON)
-        // On fera un fetch() standard ici
-        console.log("C'est une API Hacker News");
+      if (urlPropre.includes('algolia.com')) {
+        try {
+          const reponse = await fetch(urlPropre);
+          const data = await reponse.json();
+          const hits = data.hits || [];
+          console.log(`🔎 API Algolia : ${hits.length} articles trouvés.`);
+
+          for (const hit of hits) {
+            if (!hit.url) continue;
+
+            const hash = genererHash(hit.url);
+            const points = hit.points || 0;
+            const statutInitial =
+              points >= 50 ? 'EN_ATTENTE' : 'EN_OBSERVATION';
+
+            // Log de détail pour Hacker News
+            console.log(
+              `   🔸 [HN] ${points} pts | ${hit.title.substring(0, 50)}...`,
+            );
+
+            await db
+              .insert(articles)
+              .values({
+                sourceId: source.id,
+                urlOriginale: hit.url,
+                hashContenu: hash,
+                statut: statutInitial,
+                pointsHn: points,
+                datePublicationOriginale: hit.created_at
+                  ? new Date(hit.created_at)
+                  : new Date(),
+              })
+              .onConflictDoUpdate({
+                target: articles.hashContenu,
+                set: {
+                  pointsHn: points,
+                  statut: sql`CASE 
+                  WHEN articles.statut = 'EN_OBSERVATION' AND ${points} >= 50 THEN 'EN_ATTENTE'::statut_article 
+                  ELSE articles.statut 
+                END`,
+                },
+              });
+            totalTraites++;
+          }
+        } catch (e) {
+          console.error(`❌ Erreur Algolia:`, e);
+        }
       } else {
-        // -> LOGIQUE RSS STANDARD (XML)
-        const parser = new Parser();
-        // const feed = await parser.parseURL(source.urlFlux);
-        console.log("C'est un flux RSS classique");
+        try {
+          const feed = await parser.parseURL(urlPropre);
+          console.log(`📖 RSS : ${feed.items.length} articles trouvés.`);
+
+          for (const item of feed.items) {
+            if (!item.link) continue;
+            const hash = genererHash(item.link);
+
+            // Log de détail pour RSS
+            console.log(`   🔹 [RSS] ${item.title?.substring(0, 60)}...`);
+
+            await db
+              .insert(articles)
+              .values({
+                sourceId: source.id,
+                urlOriginale: item.link,
+                hashContenu: hash,
+                statut: 'EN_ATTENTE',
+                datePublicationOriginale: item.pubDate
+                  ? new Date(item.pubDate)
+                  : new Date(),
+              })
+              .onConflictDoNothing({ target: articles.hashContenu });
+            totalTraites++;
+          }
+        } catch (e) {
+          console.error(`❌ Erreur RSS:`, e);
+        }
       }
     }
 
-    // ÉTAPE 4 : Réponse de succès
-    return NextResponse.json({
-      success: true,
-      message: `Ingestion terminée. ${articlesAjoutes} nouveaux articles mis en file d'attente.`,
-    });
+    console.log("\n🧹 Nettoyage de la file d'observation...");
+    const ilYa24Heures = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const resultNettoyage = await db
+      .update(articles)
+      .set({ statut: 'IGNORE_SCORE_FAIBLE' })
+      .where(
+        and(
+          eq(articles.statut, 'EN_OBSERVATION'),
+          lt(articles.dateAjout, ilYa24Heures),
+        ),
+      );
+
+    console.log('--- ✅ FIN DU CRON ---');
+
+    return NextResponse.json({ success: true, articlesTraites: totalTraites });
   } catch (error) {
-    console.error("❌ Erreur lors du Cron d'ingestion :", error);
-    return NextResponse.json(
-      { success: false, error: "Erreur interne" },
-      { status: 500 },
-    );
+    console.error('❌ Erreur critique :', error);
+    return NextResponse.json({ success: false }, { status: 500 });
   }
 }
