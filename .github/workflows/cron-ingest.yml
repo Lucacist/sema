@@ -1,0 +1,15 @@
+name: 📡 Cron Ingest (Toutes les 2h)
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch: # Ce paramètre te permet de lancer le script manuellement depuis GitHub !
+
+jobs:
+  run-ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Appel de l'API d'ingestion Vercel
+        run: |
+          curl -X GET "https://sema-mocha.vercel.app/api/cron/ingest" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

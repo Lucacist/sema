@@ -1,0 +1,15 @@
+name: 🧠 Cron Process IA (Toutes les 15 min)
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-process:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Appel de l'API de traitement IA Vercel
+        run: |
+          curl -X GET "https://sema-mocha.vercel.app/api/cron/process" \
+          -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
