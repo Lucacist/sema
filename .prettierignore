@@ -1,0 +1,26 @@
+# Dépendances
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+
+# Fichiers de build et générés par Next.js
+/.next/
+/out/
+/build
+
+# TypeScript (fichiers générés automatiquement)
+*.tsbuildinfo
+next-env.d.ts
+
+# Tests
+/coverage
+
+# Fichiers de configuration locaux et Vercel
+.vercel
+.env*
+
+# Logs et divers (optionnel pour Prettier, mais ça évite des soucis)
+*.log
+.DS_Store
+*.pem
