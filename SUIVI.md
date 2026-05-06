@@ -1,23 +1,23 @@
 # 📊 Suivi du Projet Sema
 
-**Dernière mise à jour :** 6 mai 2026
+**Dernière mise à jour :** 7 mai 2026
 
 ---
 
 ## 🎯 Vue d'ensemble
 
-| Catégorie           | Progression | Statut          |
-| ------------------- | ----------- | --------------- |
-| **Infrastructure**  | 100%        | � Terminé       |
-| **Base de données** | 100%        | � Terminé       |
-| **Backend (API)**   | 100%        | � Terminé       |
-| **Frontend**        | 90%         | � Quasi terminé |
-| **IA & Traitement** | 100%        | � Terminé       |
-| **Cron Jobs**       | 100%        | � Terminé       |
-| **Tests**           | 0%          | 🔴 À faire      |
-| **Déploiement**     | 100%        | 🟢 Terminé      |
+| Catégorie           | Progression | Statut     |
+| ------------------- | ----------- | ---------- |
+| **Infrastructure**  | 100%        | � Terminé  |
+| **Base de données** | 100%        | � Terminé  |
+| **Backend (API)**   | 100%        | � Terminé  |
+| **Frontend**        | 100%        | 🟢 Terminé |
+| **IA & Traitement** | 100%        | � Terminé  |
+| **Cron Jobs**       | 100%        | � Terminé  |
+| **Tests**           | 0%          | 🔴 À faire |
+| **Déploiement**     | 100%        | 🟢 Terminé |
 
-**Progression globale : ~90%** 🎉
+**Progression globale : ~95%** 🎉
 
 ---
 
@@ -44,25 +44,29 @@
 - [x] **Configuration Drizzle** (`drizzle.config.ts`)
 - [x] **Instance DB exportée** (`db/index.ts`)
 - [x] Script `db:push` dans package.json
+- [x] **Scripts utilitaires**
+  - `db/seed.ts` - Seed avec 8 sources premium (OpenAI, Anthropic, DeepMind, Hugging Face, Google AI, MIT Tech Review, The Verge, Hacker News)
+  - `db/reset.ts` - Reset complet de la base de données
 
 ### Backend - API Routes ✅
 
-- [x] **Cron d'Ingestion** (`/api/cron/ingest/route.ts`) - COMPLET
+- [x] **Cron d'Ingestion** (`/api/cron/ingest/route.ts`) - COMPLET & OPTIMISÉ
   - Parser RSS fonctionnel avec `rss-parser`
   - Intégration Hacker News via API Algolia
   - Machine à états (EN_ATTENTE, EN_OBSERVATION)
   - Système de mise à jour des points HN
   - TTL 24h pour articles en observation
+  - **NOUVEAU : Filtre articles > 24h** (évite le bruit des vieux articles)
   - Hash SHA-256 pour déduplication
   - Gestion d'erreurs isolée par source
   - Sécurisation avec CRON_SECRET
   - Logging détaillé
-- [x] **Cron de Traitement IA** (`/api/cron/process/route.ts`) - COMPLET
+- [x] **Cron de Traitement IA** (`/api/cron/process/route.ts`) - COMPLET & OPTIMISÉ
   - Intégration OpenAI avec `gpt-4o-mini`
   - Structured Outputs avec Zod
   - Aspiration de contenu via Jina Reader
   - Mega-Prompt complet avec tous les filtres
-  - Batching de 3 articles par exécution
+  - **Batching de 6 articles** par exécution (optimisé depuis 3)
   - Gestion des erreurs et retry logic
   - Sécurisation avec CRON_SECRET
   - Logging détaillé
@@ -88,31 +92,49 @@
 
 ### Frontend ✅
 
-- [x] **Page d'accueil** (`app/page.tsx`) - COMPLÈTE
+- [x] **Page d'accueil** (`app/page.tsx`) - COMPLÈTE AVEC FILTRES
   - Récupération des articles depuis la DB
   - **Calcul du Gravity Score implémenté** avec la formule exacte
   - Tri avec dégradation temporelle
+  - **Recherche textuelle** dans les titres (paramètre URL `?q=`)
+  - **Filtre par source** (paramètre URL `?source=`)
+  - Extraction automatique des sources uniques
   - Gestion des cas limites (poids source, dates)
   - Tri secondaire par date
   - Server Component (force-dynamic)
-- [x] **ArticleFeed** (`components/ArticleFeed.tsx`) - COMPLET
+- [x] **ArticleFeed** (`components/ArticleFeed.tsx`) - COMPLET & REDESIGNÉ
   - Affichage des articles avec données réelles de la DB
   - Pagination "Voir plus" (10 articles par page)
-  - Format 3 puces respecté
+  - **Design amélioré** avec badges colorés par catégorie
+  - **Icônes par catégorie** (Brain, Code2, TrendingUp, Users, Newspaper)
+  - **Affichage du score IA** (1-10) sur chaque article
+  - Format 3 puces en liste à puces
   - Formatage de date relatif ("Il y a 2h")
+  - Séparateurs visuels entre articles
   - Client Component avec useState
-- [x] **Navbar** (`components/Navbar.tsx`)
+- [x] **Navbar** (`components/Navbar.tsx`) - COMPLÈTE
   - Logo Sema
-  - Barre de recherche (UI prête, fonctionnalité à implémenter)
+  - **Barre de recherche fonctionnelle** avec mise à jour URL en temps réel
+  - Recherche dans les titres d'articles
   - Design moderne avec backdrop-blur
-- [x] **Footer** (`components/Footer.tsx`)
+- [x] **Footer** (`components/Footer.tsx`) - COMPLET
   - Copyright
-  - Liens vers politique de confidentialité
-  - Lien "Signaler un article"
+  - **Liens fonctionnels** vers mentions légales et confidentialité
+  - Email de contact pour signalement
 - [x] **Composants UI shadcn/ui**
   - Badge
   - Button
   - Input
+- [x] **SourceFilters** (`components/SourceFilters.tsx`) - NOUVEAU
+  - Filtrage interactif par source
+  - Badges cliquables avec états actif/inactif
+  - Mise à jour de l'URL automatique
+  - Bouton "Toutes les actus" pour réinitialiser
+- [x] **Pages légales** - COMPLÈTES
+  - `/mentions-legales` - Informations éditeur, hébergement, propriété intellectuelle
+  - `/confidentialite` - Politique RGPD, cookies, liens externes
+  - Email de contact visible : luca.ffz@icloud.com
+  - Notice & Takedown : retrait sous 48h
 - [x] **Design System**
   - Tailwind CSS 4 configuré
   - Google Sans Flex comme police
@@ -149,41 +171,42 @@
   - `OPENAI_API_KEY`
   - `CRON_SECRET`
 - [x] **Workflow dispatch activé** pour tests manuels
+- [x] **Base de données seedée** avec 8 sources premium
+- [x] **Optimisations cron**
+  - Filtre articles > 24h (évite le bruit)
+  - Batch de 6 articles (au lieu de 3) pour le traitement IA
 
 ---
 
 ## 🚧 En cours
 
-### Frontend
+### Maintenance & Monitoring
 
-- [ ] **Fonctionnalité de recherche**
-  - Implémenter la logique de recherche (UI déjà présente)
-- [ ] **Pages légales**
-  - Créer les pages manquantes (mentions légales, confidentialité, contact)
+- [ ] **Surveillance des coûts OpenAI**
+  - Vérifier la consommation quotidienne
+  - Ajuster le batch size si nécessaire
+- [ ] **Optimisation des sources**
+  - Tester les 8 sources pendant 1 semaine
+  - Ajuster les poids selon la qualité du contenu
 
 ---
 
 ## 🔴 À faire (Par priorité)
 
-### 1. Finalisation Frontend (PRIORITÉ HAUTE)
+### 1. Améliorations UX (PRIORITÉ BASSE)
 
-- [ ] **Fonctionnalité de recherche**
-  - Implémenter la recherche dans les titres
-  - Filtrage côté client ou API route dédiée
-- [ ] **Filtres**
-  - Filtre par source (dropdown)
-  - Filtre par score de curation
-- [ ] **Page Légale** (CRITIQUE pour le déploiement)
-  - Mentions légales
-  - Politique de confidentialité
-  - Formulaire de contact pour Notice & Takedown
-  - Email de contact visible
 - [ ] **Gestion d'erreurs**
   - Error Boundaries
-  - États de loading
+  - États de loading pour les recherches
   - Messages d'erreur utilisateur
+- [ ] **Animations**
+  - Transitions entre les filtres
+  - Skeleton loaders
+- [ ] **Responsive**
+  - Tester et optimiser sur mobile
+  - Menu burger pour la recherche mobile
 
-### 2. Configuration & Maintenance (PRIORITÉ MOYENNE)
+### 2. Documentation (PRIORITÉ MOYENNE)
 
 - [ ] **Créer `.env.example`**
   ```env
@@ -192,15 +215,12 @@
   CRON_SECRET="votre-secret-securise"
   NODE_ENV="production"
   ```
-- [ ] **Script de seed**
-  - Créer `db/seed.ts` avec sources initiales
-  - Hacker News (Algolia API)
-  - MIT Technology Review RSS
-  - OpenAI Blog RSS
-  - Etc.
-- [ ] **Monitoring**
-  - Vérifier les logs GitHub Actions régulièrement
-  - Surveiller les coûts OpenAI
+- [ ] **Guide de contribution**
+  - Comment ajouter une nouvelle source
+  - Comment tester localement
+- [ ] **Documentation API**
+  - Documenter les routes cron
+  - Schéma de la base de données
 
 ### 3. API Routes supplémentaires (PRIORITÉ MOYENNE)
 
@@ -225,20 +245,22 @@
 
 ## 🎯 Roadmap
 
-### Phase 1 : MVP ✅ (QUASI TERMINÉ - 90%)
+### Phase 1 : MVP ✅ (TERMINÉ - 95%)
 
 - ✅ Base de données opérationnelle (Drizzle + NeonDB)
-- ✅ Moteur d'ingestion fonctionnel (HN + RSS)
-- ✅ Moteur IA avec mega-prompt complet
+- ✅ Moteur d'ingestion fonctionnel (HN + RSS) avec filtre 24h
+- ✅ Moteur IA avec mega-prompt complet (batch de 6)
 - ✅ Frontend moderne et fonctionnel
+- ✅ Recherche et filtres par source
+- ✅ Pages légales complètes
+- ✅ Script de seed avec 8 sources premium
 - ✅ Déploiement sur Vercel avec GitHub Actions
 
-**Reste à faire pour finaliser le MVP :**
+**Reste à faire (optionnel) :**
 
 - Créer `.env.example`
-- Créer les pages légales (mentions, confidentialité, contact)
-- Implémenter la recherche
-- Script de seed pour sources initiales
+- Tests sur mobile
+- Monitoring des coûts OpenAI
 
 ### Phase 2 : Amélioration (1-2 semaines) - À VENIR
 
@@ -251,10 +273,11 @@
 
 ## 🔄 Historique des modifications
 
-| Date             | Modification                                                          | Auteur  |
-| ---------------- | --------------------------------------------------------------------- | ------- |
-| 2026-05-06 15:30 | Mise à jour complète après analyse du code - Progression réelle : 85% | Cascade |
-| 2026-05-06 15:24 | Création du document de suivi                                         | Cascade |
+| Date             | Modification                                                                                    | Auteur  |
+| ---------------- | ----------------------------------------------------------------------------------------------- | ------- |
+| 2026-05-07 00:56 | Mise à jour finale - MVP terminé à 95% (recherche, filtres, pages légales, seed, optimisations) | Cascade |
+| 2026-05-06 15:30 | Mise à jour complète après analyse du code - Progression réelle : 85%                           | Cascade |
+| 2026-05-06 15:24 | Création du document de suivi                                                                   | Cascade |
 
 ---
 

@@ -76,7 +76,7 @@ export default async function Home({
   const resultatsFinaux = articlesClasses.slice(0, 50);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white selection:bg-blue-100 font-sans">
+    <div className="min-h-screen flex flex-col selection:bg-blue-100 font-sans">
       <Navbar />
 
       <main className="flex-grow max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-20">
