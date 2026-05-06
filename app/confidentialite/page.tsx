@@ -1,10 +1,10 @@
-import { Navbar } from '@/components/Navbar';
+import { NavbarWrapper } from '@/components/NavbarWrapper';
 import { Footer } from '@/components/Footer';
 
 export default function Confidentialite() {
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
-      <Navbar />
+      <NavbarWrapper />
 
       <main className="flex-grow max-w-3xl mx-auto w-full px-4 sm:px-6 py-12 md:py-20">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 tracking-tight mb-8">
