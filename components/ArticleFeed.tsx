@@ -1,126 +1,170 @@
-'use client'; // Indispensable car on utilise des états (useState)
+'use client';
 
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, ArrowRight, Sparkles } from 'lucide-react';
+import {
+  ExternalLink,
+  Sparkles,
+  Brain,
+  Code2,
+  TrendingUp,
+  Users,
+  Newspaper,
+} from 'lucide-react';
 
-// On définit la forme des données qu'on va recevoir
-type Article = {
-  id: string;
-  titreTraduit: string | null;
-  resumePuces: any;
-  urlOriginale: string;
-  source: { nom: string };
-  datePublicationOriginale: Date;
-};
+// Fonction pour afficher une date relative ("Il y a 2h" ou "14 Mai")
+function formaterDate(date: Date | string | null) {
+  if (!date) return 'Date inconnue';
+  const maintenant = new Date();
+  const dateArticle = new Date(date);
+  const diffHeures = Math.floor(
+    (maintenant.getTime() - dateArticle.getTime()) / (1000 * 60 * 60),
+  );
 
-export function ArticleFeed({
-  initialArticles,
-}: {
-  initialArticles: Article[];
-}) {
-  const [visibleCount, setVisibleCount] = useState(10); // On en affiche 10 au début
+  if (diffHeures < 1) return "Il y a moins d'une heure";
+  if (diffHeures < 24) return `Il y a ${diffHeures}h`;
 
-  const showMore = () => {
-    setVisibleCount((prev) => prev + 10);
+  return dateArticle.toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+// 🎨 NOUVEAU : Fonction qui attribue le style en fonction de la catégorie
+function getCategoryStyle(categorie?: string) {
+  switch (categorie) {
+    case 'Recherche & Modèles':
+      return {
+        icon: Brain,
+        badgeColor:
+          'bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200',
+        cardBorder: 'border-l-purple-500',
+      };
+    case 'Open Source':
+      return {
+        icon: Code2,
+        badgeColor:
+          'bg-orange-100 text-orange-700 border-orange-200 hover:bg-orange-200',
+        cardBorder: 'border-l-orange-500',
+      };
+    case 'Business & Startups':
+      return {
+        icon: TrendingUp,
+        badgeColor:
+          'bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200',
+        cardBorder: 'border-l-emerald-500',
+      };
+    case 'Veille Communautaire':
+      return {
+        icon: Users,
+        badgeColor:
+          'bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200',
+        cardBorder: 'border-l-blue-500',
+      };
+    default:
+      return {
+        icon: Newspaper,
+        badgeColor:
+          'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200',
+        cardBorder: 'border-l-gray-300',
+      };
+  }
+}
+
+export function ArticleFeed({ initialArticles }: { initialArticles: any[] }) {
+  const [articlesVisibles, setArticlesVisibles] = useState(10);
+
+  const chargerPlus = () => {
+    setArticlesVisibles((prev) => prev + 10);
   };
 
-  const visibleArticles = initialArticles.slice(0, visibleCount);
-  const hasMore = visibleCount < initialArticles.length;
-
-  // Petite fonction pour afficher "Il y a 2h" ou "14 Mai"
-  function formaterDate(date: Date) {
-    const maintenant = new Date();
-    const dateArticle = new Date(date);
-    const diffHeures = Math.floor(
-      (maintenant.getTime() - dateArticle.getTime()) / (1000 * 60 * 60),
-    );
-
-    if (diffHeures < 1) return "Il y a moins d'une heure";
-    if (diffHeures < 24) return `Il y a ${diffHeures}h`;
-
-    return dateArticle.toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-    });
-  }
+  const articlesAffiches = initialArticles.slice(0, articlesVisibles);
 
   return (
-    <div className="space-y-12">
-      {visibleArticles.map((article) => (
-        <article key={article.id} className="group">
-          {/* Titre style "Calibre" / "AraHub" */}
-          <h2 className="text-2xl font-bold text-zinc-900 mb-4">
-            {article.titreTraduit || 'Titre indisponible'}
-          </h2>
+    <div className="flex flex-col gap-8">
+      {articlesAffiches.map((article) => {
+        // On récupère le style pour cet article
+        const {
+          icon: CategoryIcon,
+          badgeColor,
+          cardBorder,
+        } = getCategoryStyle(article.source?.categorieDefaut);
 
-          {/* Description (Les 3 puces IA) */}
-          <div className="text-gray-600 mb-6 space-y-2 text-base leading-relaxed">
-            {Array.isArray(article.resumePuces) ? (
-              article.resumePuces.map((puce, index) => (
-                <p key={index}>• {puce as string}</p>
-              ))
-            ) : (
-              <p>Résumé indisponible.</p>
-            )}
-          </div>
-
-          {/* Ligne des Tags et du lien externe */}
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge
-                variant="secondary"
-                className="bg-gray-100 text-gray-700 hover:bg-gray-200 border-none font-medium"
-              >
-                {article.source.nom}
-              </Badge>
-              <span className="text-sm text-gray-400 font-medium">
-                • {formaterDate(article.datePublicationOriginale)}
-              </span>
-              <Badge
-                variant="outline"
-                className="text-gray-500 border-gray-200 font-normal flex items-center gap-1"
-              >
-                <Sparkles className="w-3 h-3 text-blue-500" /> IA
-              </Badge>
-            </div>
-
-            <a
-              href={article.urlOriginale}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-gray-500 hover:text-zinc-900 flex items-center gap-1 transition-colors"
+        return (
+          <div className="flex flex-col gap-8">
+            <article
+              key={article.id}
+              className={'flex flex-col overflow-hidden '}
             >
-              Source originale <ExternalLink className="w-3 h-3" />
-            </a>
+              {/* En-tête : Badges et Date */}
+              <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Badge coloré de la source avec Icône */}
+                  <Badge
+                    variant="outline"
+                    className={`${badgeColor} font-semibold flex items-center gap-1.5 px-3 py-1 shadow-sm`}
+                  >
+                    <CategoryIcon className="w-3.5 h-3.5" />
+                    {article.source?.nom || 'Source inconnue'}
+                  </Badge>
+
+                  <span className="text-sm text-gray-400 font-medium ml-1">
+                    • {formaterDate(article.datePublicationOriginale)}
+                  </span>
+
+                  <Badge
+                    variant="outline"
+                    className="text-gray-500 border-gray-200 font-normal flex items-center gap-1 ml-2 bg-gray-50"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" /> IA Score:{' '}
+                    {article.scoreCuration || '?'}/10
+                  </Badge>
+                </div>
+
+                <a
+                  href={article.urlOriginale}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-gray-400 hover:text-blue-600 flex items-center gap-1 transition-colors font-medium"
+                >
+                  Lire l'original <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+
+              {/* Corps de l'article */}
+              <h2 className="text-xl sm:text-2xl font-bold text-zinc-900 mb-4 leading-tight">
+                {article.titreTraduit || 'Titre en cours de traitement...'}
+              </h2>
+
+              <div className="text-gray-600 space-y-3 text-base sm:text-lg leading-relaxed">
+                {article.resumePuces && Array.isArray(article.resumePuces) ? (
+                  <ul className="list-disc pl-5 space-y-2">
+                    {article.resumePuces.map((puce: string, index: number) => (
+                      <li key={index} className="pl-1 marker:text-gray-300">
+                        {puce}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>{article.resumePuces || 'Résumé non disponible.'}</p>
+                )}
+              </div>
+            </article>
+            <div className="h-0.5 w-full bg-gray-400 rounded-full"></div>
           </div>
+        );
+      })}
 
-          {/* Bouton principal noir (style "Voir le projet") */}
+      {initialArticles.length > articlesVisibles && (
+        <div className="text-center pt-8 pb-4">
           <Button
-            asChild
-            className="w-full bg-zinc-900 hover:bg-zinc-800 text-white rounded-lg h-12 text-base"
-          >
-            <a
-              href={article.urlOriginale}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Lire l'article complet <ArrowRight className="w-4 h-4 ml-2" />
-            </a>
-          </Button>
-        </article>
-      ))}
-
-      {/* Bouton "Voir plus" s'il reste des articles */}
-      {hasMore && (
-        <div className="pt-8 pb-4 text-center">
-          <Button
-            onClick={showMore}
             variant="outline"
-            className="rounded-full px-8 border-gray-200 text-gray-600 hover:bg-gray-50"
+            size="lg"
+            onClick={chargerPlus}
+            className="rounded-full px-8 border-gray-200 text-zinc-700 hover:bg-gray-50 hover:text-zinc-900"
           >
-            Charger plus d'actualités
+            Voir plus d'actualités
           </Button>
         </div>
       )}
