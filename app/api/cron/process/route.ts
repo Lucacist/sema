@@ -73,7 +73,7 @@ export async function GET(request: Request) {
       .select()
       .from(articles)
       .where(eq(articles.statut, 'EN_ATTENTE'))
-      .limit(3);
+      .limit(6);
 
     if (articlesEnAttente.length === 0) {
       console.log('😴 Aucun article en attente.');

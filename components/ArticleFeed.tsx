@@ -29,6 +29,23 @@ export function ArticleFeed({
   const visibleArticles = initialArticles.slice(0, visibleCount);
   const hasMore = visibleCount < initialArticles.length;
 
+  // Petite fonction pour afficher "Il y a 2h" ou "14 Mai"
+  function formaterDate(date: Date) {
+    const maintenant = new Date();
+    const dateArticle = new Date(date);
+    const diffHeures = Math.floor(
+      (maintenant.getTime() - dateArticle.getTime()) / (1000 * 60 * 60),
+    );
+
+    if (diffHeures < 1) return "Il y a moins d'une heure";
+    if (diffHeures < 24) return `Il y a ${diffHeures}h`;
+
+    return dateArticle.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+    });
+  }
+
   return (
     <div className="space-y-12">
       {visibleArticles.map((article) => (
@@ -58,6 +75,9 @@ export function ArticleFeed({
               >
                 {article.source.nom}
               </Badge>
+              <span className="text-sm text-gray-400 font-medium">
+                • {formaterDate(article.datePublicationOriginale)}
+              </span>
               <Badge
                 variant="outline"
                 className="text-gray-500 border-gray-200 font-normal flex items-center gap-1"

@@ -49,6 +49,18 @@ export async function GET(request: Request) {
           for (const hit of hits) {
             if (!hit.url) continue;
 
+            const datePub = hit.created_at
+              ? new Date(hit.created_at)
+              : new Date();
+            const ageEnHeures =
+              (Date.now() - datePub.getTime()) / (1000 * 60 * 60);
+            if (ageEnHeures > 24) {
+              console.log(
+                `   ⏭️ [Zappé - Trop vieux] ${hit.title.substring(0, 40)}...`,
+              );
+              continue;
+            }
+
             const hash = genererHash(hit.url);
             const points = hit.points || 0;
             const statutInitial =
@@ -93,6 +105,17 @@ export async function GET(request: Request) {
 
           for (const item of feed.items) {
             if (!item.link) continue;
+
+            const datePub = item.pubDate ? new Date(item.pubDate) : new Date();
+            const ageEnHeures =
+              (Date.now() - datePub.getTime()) / (1000 * 60 * 60);
+            if (ageEnHeures > 24) {
+              console.log(
+                `   ⏭️ [Zappé - Trop vieux] ${item.title?.substring(0, 40)}...`,
+              );
+              continue;
+            }
+
             const hash = genererHash(item.link);
 
             // Log de détail pour RSS
