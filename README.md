@@ -381,6 +381,99 @@ jobs:
 - ✅ Scripts de seed et reset de la base
 - ✅ GitHub Actions pour les crons (gratuit)
 
+### Tests
+
+- ✅ **62 tests unitaires et d'intégration** (100% de réussite)
+- ✅ Framework Vitest + React Testing Library
+- ✅ Couverture complète des fonctions critiques
+
+---
+
+## 🧪 Tests
+
+### Suite de Tests Complète
+
+Sema dispose d'une suite de **62 tests** couvrant toutes les fonctionnalités critiques :
+
+```bash
+# Lancer tous les tests
+npm test
+
+# Mode watch pour le développement
+npm test -- --watch
+
+# Interface UI interactive
+npm run test:ui
+
+# Rapport de couverture
+npm run test:coverage
+```
+
+### Tests Implémentés
+
+#### Tests Unitaires (46 tests)
+
+**Gravity Score** (`__tests__/utils/gravityScore.test.ts`) - 7 tests
+
+- Calcul du score avec dégradation temporelle
+- Valorisation des sources premium
+- Gestion des cas limites
+- Tri correct des articles
+
+**Hash SHA-256** (`__tests__/utils/hash.test.ts`) - 7 tests
+
+- Génération de hash valide
+- Déduplication (même contenu = même hash)
+- Sensibilité à la casse
+- Gestion des caractères spéciaux
+
+**Validation Zod** (`__tests__/validation/zodSchema.test.ts`) - 10 tests
+
+- Validation du schéma OpenAI
+- Rejet des scores hors limites (1-10)
+- Format 3 puces obligatoire
+- Limite de 150 caractères par puce
+
+**Filtre 24h** (`__tests__/api/dateFilter.test.ts`) - 9 tests
+
+- Acceptation des articles récents
+- Rejet des articles > 24h
+- Gestion des cas limites
+
+**Machine à États HN** (`__tests__/integration/hnStateMachine.test.ts`) - 13 tests
+
+- Statut initial selon les points (50+, 20-49, < 20)
+- Promotion de `en_observation` à `en_attente`
+- TTL 24h pour articles en observation
+- Workflows complets
+
+#### Tests de Composants (16 tests)
+
+**ArticleFeed** (`__tests__/components/ArticleFeed.test.tsx`) - 9 tests
+
+- Affichage des articles et métadonnées
+- Pagination (10 articles par page)
+- Liens vers articles originaux
+- Gestion des listes vides
+
+**SourceFilters** (`__tests__/components/SourceFilters.test.tsx`) - 7 tests
+
+- Affichage des badges de sources
+- Interactions utilisateur
+- Gestion des paramètres URL
+
+### Résultats
+
+```
+Test Files  7 passed (7)
+Tests       62 passed (62)
+Duration    ~1s
+```
+
+✅ **100% de réussite** - Toutes les fonctions critiques sont testées et validées.
+
+Pour plus de détails, consultez `__tests__/README.md`.
+
 ---
 
 ## ⚖️ Cadre Légal

@@ -14,10 +14,10 @@
 | **Frontend**        | 100%        | 🟢 Terminé |
 | **IA & Traitement** | 100%        | � Terminé  |
 | **Cron Jobs**       | 100%        | � Terminé  |
-| **Tests**           | 0%          | 🔴 À faire |
+| **Tests**           | 100%        | � Terminé  |
 | **Déploiement**     | 100%        | 🟢 Terminé |
 
-**Progression globale : ~95%** 🎉
+**Progression globale : 100%** 🎉
 
 ---
 
@@ -234,18 +234,28 @@
   - Statistiques sur les articles traités
   - Taux de rejet, sources les plus actives
 
-### 4. Tests (PRIORITÉ BASSE)
+### 4. Tests ✅ (TERMINÉ)
 
-- [ ] **Tests unitaires**
-  - Calcul du Gravity Score
-  - Validation Zod
-  - Hashing de contenu
+- [x] **Tests unitaires** (7 fichiers, 62 tests)
+  - `__tests__/utils/gravityScore.test.ts` - 7 tests sur le Gravity Score
+  - `__tests__/utils/hash.test.ts` - 7 tests sur le hashing SHA-256
+  - `__tests__/validation/zodSchema.test.ts` - 10 tests de validation Zod
+  - `__tests__/api/dateFilter.test.ts` - 9 tests du filtre 24h
+  - `__tests__/integration/hnStateMachine.test.ts` - 13 tests de la machine à états HN
+  - `__tests__/components/ArticleFeed.test.tsx` - 9 tests du composant ArticleFeed
+  - `__tests__/components/SourceFilters.test.tsx` - 7 tests du composant SourceFilters
+- [x] **Framework de test configuré**
+  - Vitest + React Testing Library
+  - Configuration `vitest.config.ts`
+  - Scripts npm : `test`, `test:ui`, `test:coverage`
+- [x] **Documentation des tests**
+  - `__tests__/README.md` avec guide complet
 
 ---
 
 ## 🎯 Roadmap
 
-### Phase 1 : MVP ✅ (TERMINÉ - 95%)
+### Phase 1 : MVP ✅ (TERMINÉ - 100%)
 
 - ✅ Base de données opérationnelle (Drizzle + NeonDB)
 - ✅ Moteur d'ingestion fonctionnel (HN + RSS) avec filtre 24h
@@ -259,6 +269,7 @@
 **Reste à faire (optionnel) :**
 
 - Créer `.env.example`
+- Tests E2E avec Playwright
 - Tests sur mobile
 - Monitoring des coûts OpenAI
 
@@ -275,6 +286,7 @@
 
 | Date             | Modification                                                                                    | Auteur  |
 | ---------------- | ----------------------------------------------------------------------------------------------- | ------- |
+| 2026-05-07 01:25 | Tests complets implémentés - MVP 100% terminé (62 tests passent)                                | Cascade |
 | 2026-05-07 00:56 | Mise à jour finale - MVP terminé à 95% (recherche, filtres, pages légales, seed, optimisations) | Cascade |
 | 2026-05-06 15:30 | Mise à jour complète après analyse du code - Progression réelle : 85%                           | Cascade |
 | 2026-05-06 15:24 | Création du document de suivi                                                                   | Cascade |
